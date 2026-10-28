@@ -9,6 +9,7 @@ public class FirstPersonController : MonoBehaviour
 
     [Header("Movimiento")]
     public float moveSpeed = 5f;
+    public float sprintSpeed = 8f;
     public float jumpHeight = 1.2f;
     public float gravity = -20f;
 
@@ -65,11 +66,22 @@ public class FirstPersonController : MonoBehaviour
         Vector3 direction =
             (transform.right * x + transform.forward * z).normalized;
 
-        controller.Move(direction * moveSpeed * Time.deltaTime);
+        float currentSpeed = moveSpeed;
+
+        if (Input.GetKey(KeyCode.LeftShift) ||
+            Input.GetKey(KeyCode.RightShift))
+        {
+            currentSpeed = sprintSpeed;
+        }
+
+        controller.Move(
+            direction * currentSpeed * Time.deltaTime
+        );
 
         if (grounded && Input.GetButtonDown("Jump"))
         {
-            verticalVelocity = Mathf.Sqrt(jumpHeight * -2f * gravity);
+            verticalVelocity =
+                Mathf.Sqrt(jumpHeight * -2f * gravity);
         }
 
         verticalVelocity += gravity * Time.deltaTime;
