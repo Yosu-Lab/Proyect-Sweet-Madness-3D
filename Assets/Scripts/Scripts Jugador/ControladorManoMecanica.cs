@@ -3,8 +3,10 @@ using UnityEngine;
 
 public class ControladorManoMecanica : MonoBehaviour
 {
+    [Header("Referencias")]
     public Transform camara;
 
+    [Header("Distancia y velocidad")]
     public float distanciaMaxima = 8f;
     public float velocidadLanzamiento = 18f;
     public float velocidadRegreso = 18f;
@@ -14,7 +16,13 @@ public class ControladorManoMecanica : MonoBehaviour
     private Quaternion rotacionInicial;
 
     private Vector3 destino;
-    private Vector3 posicionEnganche;
+
+    private Transform objetivoImpactado;
+    private Vector3 posicionEngancheLocal;
+
+    private Transform objetoTransportado;
+    private Vector3 posicionObjetoLocal;
+    private Quaternion rotacionObjetoLocal;
 
     private bool objetivoValido;
 
@@ -35,7 +43,7 @@ public class ControladorManoMecanica : MonoBehaviour
         posicionInicial = transform.localPosition;
         rotacionInicial = transform.localRotation;
 
-        if (camara == null)
+        if (camara == null && Camera.main != null)
         {
             camara = Camera.main.transform;
         }
@@ -45,7 +53,8 @@ public class ControladorManoMecanica : MonoBehaviour
     {
         if (Input.GetMouseButtonDown(0))
         {
-            if (estado == EstadoMano.Preparada)
+            if (estado == EstadoMano.Preparada &&
+                objetoTransportado == null)
             {
                 LanzarMano();
             }
@@ -55,6 +64,7 @@ public class ControladorManoMecanica : MonoBehaviour
             }
         }
 
+        // Lanzamiento de la mano.
         if (estado == EstadoMano.Lanzandose)
         {
             transform.position = Vector3.MoveTowards(
@@ -67,9 +77,42 @@ public class ControladorManoMecanica : MonoBehaviour
             {
                 transform.position = destino;
 
-                if (objetivoValido)
+                if (objetivoValido && objetivoImpactado != null)
                 {
-                    estado = EstadoMano.Enganchada;
+                    if (objetivoImpactado.CompareTag("PuntoEnganche"))
+                    {
+                        // Guardamos el punto exacto del anclaje.
+                        posicionEngancheLocal =
+                            objetivoImpactado.InverseTransformPoint(
+                                transform.position
+                            );
+
+                        estado = EstadoMano.Enganchada;
+                    }
+                    else if (objetivoImpactado.CompareTag("ObjetoAgarrable"))
+                    {
+                        // Recogemos el objeto sin cambiar su padre.
+                        objetoTransportado = objetivoImpactado;
+
+                        posicionObjetoLocal =
+                            transform.InverseTransformPoint(
+                                objetoTransportado.position
+                            );
+
+                        rotacionObjetoLocal =
+                            Quaternion.Inverse(transform.rotation) *
+                            objetoTransportado.rotation;
+
+                        Rigidbody fisicas =
+                            objetoTransportado.GetComponent<Rigidbody>();
+
+                        if (fisicas != null)
+                        {
+                            fisicas.isKinematic = true;
+                        }
+
+                        IniciarRegreso();
+                    }
                 }
                 else
                 {
@@ -78,29 +121,64 @@ public class ControladorManoMecanica : MonoBehaviour
             }
         }
 
+        // Mano enganchada a un punto fijo.
+        if (estado == EstadoMano.Enganchada)
+        {
+            if (objetivoImpactado != null)
+            {
+                transform.position =
+                    objetivoImpactado.TransformPoint(
+                        posicionEngancheLocal
+                    );
+            }
+            else
+            {
+                IniciarRegreso();
+            }
+        }
+
+        // Regreso de la mano.
         if (estado == EstadoMano.Regresando)
         {
+            Vector3 posicionObjetivo =
+                puntoAcoplamiento.TransformPoint(posicionInicial);
+
             transform.position = Vector3.MoveTowards(
                 transform.position,
-                puntoAcoplamiento.position,
+                posicionObjetivo,
                 velocidadRegreso * Time.deltaTime
             );
 
             if (Vector3.Distance(
                 transform.position,
-                puntoAcoplamiento.position) < 0.05f)
+                posicionObjetivo) < 0.05f)
             {
                 transform.localPosition = posicionInicial;
                 transform.localRotation = rotacionInicial;
 
+                objetivoImpactado = null;
                 estado = EstadoMano.Preparada;
             }
         }
-    }
 
+        // El objeto permanece sujeto a la mano.
+        if (objetoTransportado != null)
+        {
+            objetoTransportado.position =
+                transform.TransformPoint(posicionObjetoLocal);
+
+            objetoTransportado.rotation =
+                transform.rotation * rotacionObjetoLocal;
+        }
+    }
 
     void LanzarMano()
     {
+        if (camara == null)
+        {
+            return;
+        }
+
         RaycastHit[] impactos = Physics.RaycastAll(
             camara.position,
             camara.forward,
@@ -108,6 +186,7 @@ public class ControladorManoMecanica : MonoBehaviour
         );
 
         objetivoValido = false;
+        objetivoImpactado = null;
 
         float distanciaCercana = distanciaMaxima;
 
@@ -125,10 +204,24 @@ public class ControladorManoMecanica : MonoBehaviour
             if (impacto.distance < distanciaCercana)
             {
                 distanciaCercana = impacto.distance;
+
                 destino = impacto.point;
 
-                objetivoValido =
-                    impacto.collider.CompareTag("ObjetivoMano");
+                Transform objeto = impacto.collider.transform;
+
+                // Buscamos el Tag también en los padres.
+                while (objeto != null &&
+                       !objeto.CompareTag("PuntoEnganche") &&
+                       !objeto.CompareTag("ObjetoAgarrable"))
+                {
+                    objeto = objeto.parent;
+                }
+
+                if (objeto != null)
+                {
+                    objetivoValido = true;
+                    objetivoImpactado = objeto;
+                }
             }
         }
 
@@ -137,6 +230,7 @@ public class ControladorManoMecanica : MonoBehaviour
 
     void IniciarRegreso()
     {
+        objetivoImpactado = null;
         estado = EstadoMano.Regresando;
     }
 }

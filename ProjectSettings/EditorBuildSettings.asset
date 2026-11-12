@@ -9,6 +9,12 @@ EditorBuildSettings:
     path: Assets/Scenes/Escenas Capitulo 1/Escena Gameplay - Juego/Nivel Capitulo
       1.unity
     guid: 99c9720ab356a0642a771bea13969a05
+  - enabled: 1
+    path: Assets/Scenes/Escenas Capitulo 1/Escenas Menu/Menu Selector de capitulos.unity
+    guid: 6443b403d422f464daa71e432e699a1b
+  - enabled: 1
+    path: Assets/Scenes/Escenas Capitulo 1/Escenas Menu/Menu Principal Cap 1.unity
+    guid: 8f48dcca327d87b46a89444229a6a584
   m_configObjects:
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}
   m_UseUCBPForAssetBundles: 0
