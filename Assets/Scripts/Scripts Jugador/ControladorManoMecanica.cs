@@ -7,7 +7,7 @@ public class ControladorManoMecanica : MonoBehaviour
     public Transform camara;
 
     [Header("Distancia y velocidad")]
-    public float distanciaMaxima = 8f;
+    public float distanciaMaxima = 5f;
     public float velocidadLanzamiento = 18f;
     public float velocidadRegreso = 18f;
 
@@ -27,6 +27,12 @@ public class ControladorManoMecanica : MonoBehaviour
     private bool objetivoValido;
 
     private EstadoMano estado = EstadoMano.Preparada;
+
+    public bool EstaEnganchada =>
+        estado == EstadoMano.Enganchada;
+
+    public Transform PuntoEngancheActual =>
+        objetivoImpactado;
 
     private enum EstadoMano
     {
@@ -51,6 +57,7 @@ public class ControladorManoMecanica : MonoBehaviour
 
     void Update()
     {
+        // Lanzar o recuperar la mano.
         if (Input.GetMouseButtonDown(0))
         {
             if (estado == EstadoMano.Preparada &&
@@ -62,6 +69,13 @@ public class ControladorManoMecanica : MonoBehaviour
             {
                 IniciarRegreso();
             }
+        }
+
+        // Soltar el objeto con el botón derecho.
+        if (Input.GetMouseButtonDown(1) &&
+            objetoTransportado != null)
+        {
+            SoltarObjeto();
         }
 
         // Lanzamiento de la mano.
@@ -81,7 +95,6 @@ public class ControladorManoMecanica : MonoBehaviour
                 {
                     if (objetivoImpactado.CompareTag("PuntoEnganche"))
                     {
-                        // Guardamos el punto exacto del anclaje.
                         posicionEngancheLocal =
                             objetivoImpactado.InverseTransformPoint(
                                 transform.position
@@ -91,7 +104,6 @@ public class ControladorManoMecanica : MonoBehaviour
                     }
                     else if (objetivoImpactado.CompareTag("ObjetoAgarrable"))
                     {
-                        // Recogemos el objeto sin cambiar su padre.
                         objetoTransportado = objetivoImpactado;
 
                         posicionObjetoLocal =
@@ -209,7 +221,6 @@ public class ControladorManoMecanica : MonoBehaviour
 
                 Transform objeto = impacto.collider.transform;
 
-                // Buscamos el Tag también en los padres.
                 while (objeto != null &&
                        !objeto.CompareTag("PuntoEnganche") &&
                        !objeto.CompareTag("ObjetoAgarrable"))
@@ -232,5 +243,21 @@ public class ControladorManoMecanica : MonoBehaviour
     {
         objetivoImpactado = null;
         estado = EstadoMano.Regresando;
+    }
+
+    void SoltarObjeto()
+    {
+        if (objetoTransportado == null)
+            return;
+
+        Rigidbody fisicas =
+            objetoTransportado.GetComponent<Rigidbody>();
+
+        if (fisicas != null)
+        {
+            fisicas.isKinematic = false;
+        }
+
+        objetoTransportado = null;
     }
 }
