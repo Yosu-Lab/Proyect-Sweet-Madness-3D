@@ -9,7 +9,7 @@ public class DetectorInteraccion : MonoBehaviour
     public TMP_Text textoInteraccion;
 
     [Header("Deteccion")]
-    public float distanciaInteraccion = 3f;
+    public float distanciaInteraccion = 5f;
 
     private Interactuable objetoActual;
     private Interactuable objetoAnterior;
