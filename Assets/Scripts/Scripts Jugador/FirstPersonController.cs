@@ -9,14 +9,14 @@ public class FirstPersonController : MonoBehaviour
     public ControladorManoMecanica controladorMano;
 
     [Header("Movimiento")]
-    public float moveSpeed = 5f;
-    public float sprintSpeed = 10f;
-    public float jumpHeight = 2f;
-    public float gravity = -20f;
+    public float velocidadmovimiento = 5f;
+    public float VelocidadSprint = 10f;
+    public float AlturaSalto = 2f;
+    public float gravedad = -20f;
 
     [Header("Camara")]
-    public float mouseSensitivity = 2f;
-    public float maxLookAngle = 85f;
+    public float SensibildadRaton = 2f;
+    public float AnguloMaximo = 85f;
 
     [Header("Cable mecanico")]
     public float longitudCable = 10f;
@@ -83,14 +83,14 @@ public class FirstPersonController : MonoBehaviour
 
     void Look()
     {
-        float mouseX = Input.GetAxis("Mouse X") * mouseSensitivity;
-        float mouseY = Input.GetAxis("Mouse Y") * mouseSensitivity;
+        float mouseX = Input.GetAxis("Mouse X") * SensibildadRaton;
+        float mouseY = Input.GetAxis("Mouse Y") * SensibildadRaton;
 
         transform.Rotate(Vector3.up * mouseX);
 
         cameraPitch -= mouseY;
         cameraPitch = Mathf.Clamp(
-            cameraPitch, -maxLookAngle, maxLookAngle
+            cameraPitch, -AnguloMaximo, AnguloMaximo
         );
 
         playerCamera.localRotation =
@@ -112,21 +112,21 @@ public class FirstPersonController : MonoBehaviour
         Vector3 direction =
             (transform.right * x + transform.forward * z).normalized;
 
-        float currentSpeed = moveSpeed;
+        float currentSpeed = velocidadmovimiento;
 
         if (Input.GetKey(KeyCode.LeftShift) ||
             Input.GetKey(KeyCode.RightShift))
         {
-            currentSpeed = sprintSpeed;
+            currentSpeed = VelocidadSprint;
         }
 
         if (grounded && Input.GetButtonDown("Jump"))
         {
             verticalVelocity =
-                Mathf.Sqrt(jumpHeight * -2f * gravity);
+                Mathf.Sqrt(AlturaSalto * -2f * gravedad);
         }
 
-        verticalVelocity += gravity * Time.deltaTime;
+        verticalVelocity += gravedad * Time.deltaTime;
 
         controller.Move(
             direction * currentSpeed * Time.deltaTime

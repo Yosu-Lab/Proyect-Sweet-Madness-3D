@@ -26,13 +26,16 @@ public class ControladorManoMecanica : MonoBehaviour
 
     private bool objetivoValido;
 
-    private EstadoMano estado = EstadoMano.Preparada;
+    // NUEVO: bloqueo del brazo
+    private bool usoBloqueado = false;
 
     public bool EstaEnganchada =>
         estado == EstadoMano.Enganchada;
 
     public Transform PuntoEngancheActual =>
         objetivoImpactado;
+
+    private EstadoMano estado = EstadoMano.Preparada;
 
     private enum EstadoMano
     {
@@ -58,7 +61,7 @@ public class ControladorManoMecanica : MonoBehaviour
     void Update()
     {
         // Lanzar o recuperar la mano.
-        if (Input.GetMouseButtonDown(0))
+        if (!usoBloqueado && Input.GetMouseButtonDown(0))
         {
             if (estado == EstadoMano.Preparada &&
                 objetoTransportado == null)
@@ -182,6 +185,18 @@ public class ControladorManoMecanica : MonoBehaviour
             objetoTransportado.rotation =
                 transform.rotation * rotacionObjetoLocal;
         }
+    }
+
+    // NUEVO: activar o desactivar el uso del brazo
+    public void EstablecerUsoBloqueado(bool bloquear)
+    {
+        usoBloqueado = bloquear;
+
+        Debug.Log(
+            bloquear
+            ? "Brazo mecanico bloqueado."
+            : "Brazo mecanico desbloqueado."
+        );
     }
 
     void LanzarMano()
