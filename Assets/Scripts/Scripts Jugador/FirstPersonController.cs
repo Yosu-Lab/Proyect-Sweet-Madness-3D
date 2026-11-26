@@ -51,6 +51,10 @@ public class FirstPersonController : MonoBehaviour
 
     void Update()
     {
+        // BLOQUEAR TODOS LOS CONTROLES CUANDO EL JUEGO ESTA PAUSADO
+        if (Time.timeScale == 0f)
+            return;
+
         Look();
 
         bool enganchado =
@@ -175,14 +179,12 @@ public class FirstPersonController : MonoBehaviour
 
         Vector3 direccionRadial = diferencia.normalized;
 
-        // Solo permitimos movimiento tangencial a la cuerda.
         Vector3 direccionTangencial =
             Vector3.ProjectOnPlane(
                 direccionEntrada,
                 direccionRadial
             ).normalized;
 
-        // La gravedad también genera el balanceo.
         Vector3 gravedadTangencial =
             Vector3.ProjectOnPlane(
                 Physics.gravity,
@@ -202,13 +204,11 @@ public class FirstPersonController : MonoBehaviour
             amortiguacionBalanceo * Time.deltaTime
         );
 
-        // Evitamos superar la velocidad máxima.
         velocidadBalanceo = Vector3.ClampMagnitude(
             velocidadBalanceo,
             velocidadMaximaBalanceo
         );
 
-        // Eliminamos el movimiento que se aleja radialmente.
         velocidadBalanceo = Vector3.ProjectOnPlane(
             velocidadBalanceo,
             direccionRadial
@@ -218,7 +218,6 @@ public class FirstPersonController : MonoBehaviour
             velocidadBalanceo * Time.deltaTime
         );
 
-        // Mantenemos la longitud de la cuerda.
         diferencia = transform.position - puntoBalanceo.position;
 
         if (diferencia.magnitude > 0.01f)
@@ -240,3 +239,4 @@ public class FirstPersonController : MonoBehaviour
         Cursor.visible = true;
     }
 }
+

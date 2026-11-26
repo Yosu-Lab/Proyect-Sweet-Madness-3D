@@ -1,4 +1,5 @@
 
+
 using UnityEngine;
 
 public class ControladorBateria : MonoBehaviour
@@ -10,6 +11,9 @@ public class ControladorBateria : MonoBehaviour
 
     [Header("Control del brazo mecanico")]
     public ControladorManoMecanica controladorMano;
+
+    [Header("Mensajes")]
+    public ControladorMensajes controladorMensajes;
 
     private bool tieneBateria = false;
     private bool bateriaInsertada = false;
@@ -78,6 +82,18 @@ public class ControladorBateria : MonoBehaviour
             controladorMano.EstablecerUsoBloqueado(false);
         }
 
-        Debug.Log("Bateria insertada. Brazo mecanico desbloqueado.");
+        // Reproducir sonido de electricidad
+        if (AudioManager.Instancia != null)
+        {
+            AudioManager.Instancia.ReproducirElectricidad();
+        }
+
+        // Mostrar mensaje final
+        if (controladorMensajes != null)
+        {
+            controladorMensajes.MostrarHuyeFabrica();
+        }
+
+        Debug.Log("Bateria insertada. Energia restablecida. ¡Huye de la fabrica!");
     }
 }

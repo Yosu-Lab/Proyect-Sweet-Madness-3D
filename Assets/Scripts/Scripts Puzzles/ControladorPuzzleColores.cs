@@ -29,6 +29,7 @@ public class ControladorPuzzleColores : MonoBehaviour
     public GameObject puertaMorada;
 
     private int posicionActual = 0;
+    private bool puzzleResuelto = false;
 
     public void PulsarRojo() => ComprobarColor(ColorPuzzle.Rojo);
     public void PulsarAzul() => ComprobarColor(ColorPuzzle.Azul);
@@ -42,7 +43,7 @@ public class ControladorPuzzleColores : MonoBehaviour
 
     private void ComprobarColor(ColorPuzzle colorPulsado)
     {
-        if (combinacionCorrecta.Length == 0)
+        if (puzzleResuelto || combinacionCorrecta.Length == 0)
             return;
 
         if (colorPulsado == combinacionCorrecta[posicionActual])
@@ -50,6 +51,9 @@ public class ControladorPuzzleColores : MonoBehaviour
             posicionActual++;
 
             Debug.Log("¡Color correcto!");
+
+            if (AudioManager.Instancia != null)
+                AudioManager.Instancia.ReproducirCorrecto();
 
             if (posicionActual >= combinacionCorrecta.Length)
             {
@@ -59,13 +63,22 @@ public class ControladorPuzzleColores : MonoBehaviour
         else
         {
             Debug.Log("Combinación incorrecta. Vuelve a empezar.");
+
+            if (AudioManager.Instancia != null)
+                AudioManager.Instancia.ReproducirIncorrecto();
+
             posicionActual = 0;
         }
     }
 
     private void ResolverPuzzle()
     {
+        puzzleResuelto = true;
+
         Debug.Log("¡PUZZLE COMPLETADO!");
+
+        if (AudioManager.Instancia != null)
+            AudioManager.Instancia.ReproducirCompletado();
 
         if (puertaMorada != null)
         {
@@ -73,3 +86,4 @@ public class ControladorPuzzleColores : MonoBehaviour
         }
     }
 }
+
